@@ -374,7 +374,10 @@ const ExcalidrawWrapper = () => {
   const excalidrawAPI = useExcalidrawAPI();
 
   const [errorMessage, setErrorMessage] = useState("");
-  const isCollabDisabled = isRunningInIframe();
+  // KovaForge: VITE_APP_DISABLE_SHARING turns off live collaboration, share links and Excalidraw+ export,
+  // so drawings never leave the browser.
+  const isSharingDisabled = import.meta.env.VITE_APP_DISABLE_SHARING === "true";
+  const isCollabDisabled = isRunningInIframe() || isSharingDisabled;
 
   const { editorTheme, appTheme, setAppTheme } = useHandleAppTheme();
 
@@ -917,8 +920,8 @@ const ExcalidrawWrapper = () => {
           canvasActions: {
             toggleTheme: true,
             export: {
-              onExportToBackend,
-              renderCustomUI: excalidrawAPI
+              onExportToBackend: isSharingDisabled ? undefined : onExportToBackend,
+              renderCustomUI: excalidrawAPI && !isSharingDisabled
                 ? (elements, appState, files) => {
                     return (
                       <ExportToExcalidrawPlus
