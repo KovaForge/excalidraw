@@ -33,6 +33,10 @@ Two hooks in `excalidraw-app/App.tsx`:
 1. The `isSharingDisabled` gate, controlled by the env `VITE_APP_DISABLE_SHARING`. It switches off collaboration, the backend export and the Excalidraw+ export UI.
 2. The command-palette entry "Export to Excalidraw+", whose `predicate` is `!isSharingDisabled`, so it is hidden when sharing is disabled.
 
+One change in `excalidraw-app/index.html`:
+
+3. `excalidraw-app/index.html`: the Simple Analytics script (scripts.simpleanalyticscdn.com) and its iframe/legacy-analytics glue are removed, replaced by a `KOVAFORGE:` comment. Why: `VITE_APP_ENABLE_TRACKING=false` did not stop it, and the built canvas must not contain third-party analytics.
+
 Every future hook into upstream files must be marked with a `KOVAFORGE:` comment and listed here.
 
 ## Where our own code lives
