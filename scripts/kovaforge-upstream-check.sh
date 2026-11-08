@@ -41,7 +41,7 @@ if [ "$count" -eq 0 ]; then
   exit 0
 fi
 
-oldest="$(git log "HEAD..$ref" --format=%ct | tail -1)"
+oldest="$(git log "HEAD..$ref" --format=%ct | sort -n | head -1)"
 days=$(( ( $(date +%s) - oldest ) / 86400 ))
 echo "$count upstream commits missing; the oldest is $days days old (limit $limit)"
 if [ "$days" -le "$limit" ]; then

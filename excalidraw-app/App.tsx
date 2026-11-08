@@ -376,7 +376,7 @@ const ExcalidrawWrapper = () => {
   const excalidrawAPI = useExcalidrawAPI();
 
   const [errorMessage, setErrorMessage] = useState("");
-  // KovaForge: VITE_APP_DISABLE_SHARING turns off live collaboration, share links and Excalidraw+ export,
+  // KOVAFORGE: VITE_APP_DISABLE_SHARING turns off live collaboration, share links and Excalidraw+ export,
   // so drawings never leave the browser.
   const isSharingDisabled = import.meta.env.VITE_APP_DISABLE_SHARING === "true";
   const isCollabDisabled = isRunningInIframe() || isSharingDisabled;
@@ -1271,7 +1271,8 @@ const ExcalidrawWrapper = () => {
               label: t("overwriteConfirm.action.excalidrawPlus.button"),
               category: DEFAULT_CATEGORIES.export,
               icon: exportToPlus,
-              predicate: true,
+              // KOVAFORGE: hidden when sharing is disabled.
+              predicate: !isSharingDisabled,
               keywords: ["plus", "export", "save", "backup"],
               perform: () => {
                 if (excalidrawAPI) {

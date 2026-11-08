@@ -24,11 +24,14 @@ Environment settings (defaults in brackets):
 - `KOVAFORGE_UPSTREAM_BRANCH` [`master`]
 - `KOVAFORGE_MAX_AGE_DAYS` [`7`]
 
-The script can be run from any directory inside the repo.
+The script can be run from any directory inside the repo. "Oldest missing commit" is the minimum committer timestamp among the missing commits, because timestamps are not monotonic across merges.
 
 ## Our changes to upstream files
 
-1. `excalidraw-app/App.tsx`: the `isSharingDisabled` gate, controlled by the env `VITE_APP_DISABLE_SHARING`. It switches off collaboration, the backend export and the Excalidraw+ export UI.
+Two hooks in `excalidraw-app/App.tsx`:
+
+1. The `isSharingDisabled` gate, controlled by the env `VITE_APP_DISABLE_SHARING`. It switches off collaboration, the backend export and the Excalidraw+ export UI.
+2. The command-palette entry "Export to Excalidraw+", whose `predicate` is `!isSharingDisabled`, so it is hidden when sharing is disabled.
 
 Every future hook into upstream files must be marked with a `KOVAFORGE:` comment and listed here.
 
