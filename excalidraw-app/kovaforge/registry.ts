@@ -1,5 +1,6 @@
 // Registry of layout and drawing engines by id. Importing this file registers nothing: call registerDefaults() from app code.
 
+import { excalidrawEngine } from "./engine-excalidraw";
 import { dagreLayout } from "./layout-dagre";
 
 import type { DiagramEngine, LayoutEngine } from "./engine";
@@ -43,5 +44,6 @@ export function getLayout(id: string = DEFAULT_LAYOUT_ID): LayoutEngine {
 }
 
 export function registerDefaults() {
+  registerEngine(excalidrawEngine);
   registerLayout(dagreLayout);
 }

@@ -1,4 +1,5 @@
 import { dagreLayout } from "./layout-dagre";
+import { excalidrawEngine } from "./engine-excalidraw";
 import {
   getEngine,
   getLayout,
@@ -17,13 +18,15 @@ describe("registry", () => {
 
   it("returns the defaults after registerDefaults()", () => {
     registerDefaults();
+    expect(getEngine("excalidraw")).toBe(excalidrawEngine);
     expect(getLayout("dagre")).toBe(dagreLayout);
+    expect(getEngine()).toBe(excalidrawEngine);
     expect(getLayout()).toBe(dagreLayout);
   });
 
   it("throws a clear error on an unknown id", () => {
     expect(() => getEngine("tldraw")).toThrow(
-      'Unknown diagram engine "tldraw". Registered: none.',
+      'Unknown diagram engine "tldraw". Registered: excalidraw.',
     );
     expect(() => getLayout("elk")).toThrow(
       'Unknown layout "elk". Registered: dagre.',
@@ -33,14 +36,7 @@ describe("registry", () => {
   it("lets another adapter register by id", () => {
     registerLayout({ id: "mine", layout: dagreLayout.layout });
     expect(getLayout("mine").id).toBe("mine");
-    const stub = {
-      id: "other",
-      version: "1",
-      toScene: () => ({ engine: "other", version: "1", data: null }),
-      exportSvg: async () => "",
-      exportPng: async () => new Blob(),
-    };
-    registerEngine(stub);
-    expect(getEngine("other")).toBe(stub);
+    registerEngine({ ...excalidrawEngine, id: "other" });
+    expect(getEngine("other").id).toBe("other");
   });
 });

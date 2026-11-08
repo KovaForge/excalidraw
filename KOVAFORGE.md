@@ -37,11 +37,18 @@ One change in `excalidraw-app/index.html`:
 
 3. `excalidraw-app/index.html`: the Simple Analytics script (scripts.simpleanalyticscdn.com) and its iframe/legacy-analytics glue are removed, replaced by a `KOVAFORGE:` comment. Why: `VITE_APP_ENABLE_TRACKING=false` did not stop it, and the built canvas must not contain third-party analytics.
 
+4. `.eslintignore`: one line excluding `excalidraw-app/kovaforge/diagram.ts` (see the copy contract below).
+
 Every future hook into upstream files must be marked with a `KOVAFORGE:` comment and listed here.
 
 ## Where our own code lives
 
-`excalidraw-app/kovaforge/` (not created yet).
+`excalidraw-app/kovaforge/`. Everything KovaForge adds to the app goes here, so upstream merges stay small.
+
+- Interfaces (`engine.ts`): a `LayoutEngine` turns a neutral `Diagram` into a `PositionedDiagram` (top-left `Rect` per node, route hints per edge); a `DiagramEngine` turns that into its own JSON-serialisable `EngineScene` and exports it as SVG and PNG. `registry.ts` looks both up by id (defaults `excalidraw` and `dagre`); nothing is registered on import, app code calls `registerDefaults()`. To swap an engine or layout, write one adapter and register it. Only `engine-excalidraw.ts` knows about Excalidraw and only `layout-dagre.ts` knows about dagre.
+- Layout: `layout-dagre.ts` (dagre node x and y are centres; converted to top-left). Excalidraw adapter: `engine-excalidraw.ts` (`exportScene`, since this version of Excalidraw replaced `exportToSvg` and `exportToBlob`).
+- Dependency added: `@dagrejs/dagre` at exactly 3.1.3 (MIT, in `excalidraw-app/package.json`), approved for graph layout. It pulls in `@dagrejs/graphlib`. On a `yarn.lock` conflict follow the lockfile rule below.
+- Copy contract: `excalidraw-app/kovaforge/diagram.ts` is a byte-for-byte copy of `src/canvas/diagram.ts` in kovaforge-home. Change it there, then `cp` it here; never edit this copy. `canvas/build.sh` in kovaforge-home refuses to build when the two differ, and `diagram.test.ts` checks it when the hub checkout is next to this repo. The file is listed in `.eslintignore` (marked `KOVAFORGE:`) so lint cannot reformat it.
 
 ## Commands
 
