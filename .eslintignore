@@ -9,3 +9,5 @@ packages/excalidraw/types
 examples/**/public
 dev-dist
 coverage
+# KOVAFORGE: byte-identical copy of the hub file, not reformatted here
+excalidraw-app/kovaforge/diagram.ts
