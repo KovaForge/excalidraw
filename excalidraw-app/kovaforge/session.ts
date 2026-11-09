@@ -4,6 +4,9 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import type { EngineScene } from "./engine";
 
+export const FIT_TOP_PX = 100;
+export const FIT_BOTTOM_PX = 140;
+
 let api: ExcalidrawImperativeAPI | null = null;
 let queued: EngineScene | null = null;
 
@@ -18,8 +21,22 @@ function apply(target: ExcalidrawImperativeAPI, scene: EngineScene) {
   });
   const shown = target.getSceneElements();
   if (shown.length) {
-    // this version of Excalidraw has setViewport in place of scrollToContent
-    target.setViewport({ target: shown, fit: "scale-down", animation: false });
+    // this version of Excalidraw has setViewport in place of scrollToContent.
+    // Inset the usable area (toolbar and hint above, banner and zoom controls below,
+    // 10% each side) so the draft opens clear of the overlaid UI; "scale-down"
+    // never zooms past 100% for small diagrams.
+    const side = Math.round(target.getAppState().width * 0.1);
+    target.setViewport({
+      target: shown,
+      fit: "scale-down",
+      animation: false,
+      offsets: {
+        top: FIT_TOP_PX,
+        bottom: FIT_BOTTOM_PX,
+        left: side,
+        right: side,
+      },
+    });
   }
 }
 
