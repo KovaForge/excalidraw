@@ -182,6 +182,12 @@
     right: 12px;
   }
 }
+@media (max-width: 730px) {
+  /* keep the banner above the editor's undo and redo controls on a phone */
+  .kf-banner {
+    bottom: 104px;
+  }
+}
 .kf-actions button:hover,
 .kf-actions button:focus-visible {
   border-color: #2bd47f;
@@ -192,7 +198,7 @@
 .kf-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 2000; /* above the editor's own floating controls */
   display: flex;
   align-items: center;
   justify-content: center;
