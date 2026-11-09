@@ -45,6 +45,10 @@ One change in `excalidraw-app/index.html`:
 8. `excalidraw-app/components/AppWelcomeScreen.tsx`: the "Sign up" (Excalidraw+) item is hidden when `VITE_APP_DISABLE_SHARING` is `"true"` (marker `KOVAFORGE: no Excalidraw+ sign-up`). Same flag as `isSharingDisabled`, which is local to App.tsx.
 9. `excalidraw-app/components/AppMainMenu.tsx`: the two Excalidraw+ items (Excalidraw+ link and Sign up/Sign in) are hidden under the same flag (marker `KOVAFORGE: no Excalidraw+ items`). Why: they lead to cloud services we do not use.
 
+10. `packages/excalidraw/subset/woff2/woff2-bindings.ts`: the three `new Function` uses (`createNamedFunction`, `makeDynCaller`, and `craftInvokerFunction` via `new_(Function, ...)`) are replaced by plain closures (marker `KOVAFORGE: no new Function`). Why: the hub serves /canvas without `unsafe-eval`; the EvalError broke glyph subsetting, and the export then fell back to blocked esm.sh font URLs. Behaviour is the same.
+
+11. `packages/excalidraw/fonts/ExcalidrawFontFace.ts` (`createUrls`): the esm.sh fallback url is skipped when `window.KOVAFORGE_NO_FONT_FALLBACK` is true (marker `KOVAFORGE: the hub self-hosts the fonts`), and `excalidraw-app/index.html` sets that flag in an inline script before the app (marker `KOVAFORGE: fonts are self-hosted`). Why: every registered font face listed an esm.sh url, and the hub's CSP (`font-src 'self' data:`) reported about 230 violations as soon as the editor mounted. The build's `window.EXCALIDRAW_ASSET_PATH` must be `["/"]` (the font urls already carry the `/canvas/` base); `canvas/build.sh` in kovaforge-home sets that.
+
 Every future hook into upstream files must be marked with a `KOVAFORGE:` comment and listed here.
 
 ## Where our own code lives

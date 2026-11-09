@@ -164,7 +164,13 @@ export class ExcalidrawFontFace {
     }
 
     // fallback url for bundled fonts
-    urls.push(new URL(assetUrl, ExcalidrawFontFace.ASSETS_FALLBACK_URL));
+    // KOVAFORGE: the hub self-hosts the fonts and its CSP allows no third-party host, so it opts out of the esm.sh fallback
+    if (
+      !(window as { KOVAFORGE_NO_FONT_FALLBACK?: boolean })
+        .KOVAFORGE_NO_FONT_FALLBACK
+    ) {
+      urls.push(new URL(assetUrl, ExcalidrawFontFace.ASSETS_FALLBACK_URL));
+    }
 
     return urls;
   }

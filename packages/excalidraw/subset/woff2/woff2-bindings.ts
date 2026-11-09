@@ -1342,13 +1342,12 @@ const Module = (function () {
     }
     function createNamedFunction(name, body) {
       name = makeLegalFunctionName(name);
-      return new Function(
-        "body",
-        `return function ${name}() {\n` +
-          `    "use strict";` +
-          `    return body.apply(this, arguments);\n` +
-          `};\n`,
-      )(body);
+      // KOVAFORGE: no `new Function` (the hub's CSP has no unsafe-eval); same behaviour, the name is set by hand
+      const fn = function (this: unknown) {
+        return body.apply(this, arguments);
+      };
+      Object.defineProperty(fn, "name", { value: name });
+      return fn;
     }
     function extendError(baseErrorType, errorName) {
       const errorClass = createNamedFunction(errorName, function (message) {
@@ -2052,20 +2051,10 @@ const Module = (function () {
     function embind__requireFunction(signature, rawFunction) {
       signature = readLatin1String(signature);
       function makeDynCaller(dynCall) {
-        const args = [];
-        for (let i = 1; i < signature.length; ++i) {
-          args.push(`a${i}`);
-        }
-        const name = `dynCall_${signature}_${rawFunction}`;
-        let body = `return function ${name}(${args.join(", ")}) {\n`;
-        body += `    return dynCall(rawFunction${
-          args.length ? ", " : ""
-        }${args.join(", ")});\n`;
-        body += "};\n";
-        return new Function("dynCall", "rawFunction", body)(
-          dynCall,
-          rawFunction,
-        );
+        // KOVAFORGE: no `new Function` (the hub's CSP has no unsafe-eval); same behaviour as the generated wrapper
+        return function (...args: unknown[]) {
+          return dynCall(rawFunction, ...args);
+        };
       }
       let fp;
       if (Module[`FUNCTION_TABLE_${signature}`] !== undefined) {
@@ -2346,78 +2335,45 @@ const Module = (function () {
         }
       }
       const returns = argTypes[0].name !== "void";
-      let argsList = "";
-      let argsListWired = "";
-      for (var i = 0; i < argCount - 2; ++i) {
-        argsList += `${i !== 0 ? ", " : ""}arg${i}`;
-        argsListWired += `${i !== 0 ? ", " : ""}arg${i}Wired`;
-      }
-      let invokerFnBody =
-        `return function ${makeLegalFunctionName(humanName)}(${argsList}) {\n` +
-        `if (arguments.length !== ${argCount - 2}) {\n` +
-        `throwBindingError('function ${humanName} called with ' + arguments.length + ' arguments, expected ${
-          argCount - 2
-        } args!');\n` +
-        `}\n`;
-      if (needsDestructorStack) {
-        invokerFnBody += "var destructors = [];\n";
-      }
-      const dtorStack = needsDestructorStack ? "destructors" : "null";
-      const args1 = [
-        "throwBindingError",
-        "invoker",
-        "fn",
-        "runDestructors",
-        "retType",
-        "classParam",
-      ];
-      const args2 = [
-        throwBindingError,
-        cppInvokerFunc,
-        cppTargetFunc,
-        runDestructors,
-        argTypes[0],
-        argTypes[1],
-      ];
-      if (isClassMethodFunc) {
-        invokerFnBody += `var thisWired = classParam.toWireType(${dtorStack}, this);\n`;
-      }
-      for (var i = 0; i < argCount - 2; ++i) {
-        invokerFnBody += `var arg${i}Wired = argType${i}.toWireType(${dtorStack}, arg${i}); // ${
-          argTypes[i + 2].name
-        }\n`;
-        args1.push(`argType${i}`);
-        args2.push(argTypes[i + 2]);
-      }
-      if (isClassMethodFunc) {
-        argsListWired = `thisWired${
-          argsListWired.length > 0 ? ", " : ""
-        }${argsListWired}`;
-      }
-      invokerFnBody += `${returns ? "var rv = " : ""}invoker(fn${
-        argsListWired.length > 0 ? ", " : ""
-      }${argsListWired});\n`;
-      if (needsDestructorStack) {
-        invokerFnBody += "runDestructors(destructors);\n";
-      } else {
-        for (var i = isClassMethodFunc ? 1 : 2; i < argTypes.length; ++i) {
-          const paramName = i === 1 ? "thisWired" : `arg${i - 2}Wired`;
-          if (argTypes[i].destructorFunction !== null) {
-            invokerFnBody += `${paramName}_dtor(${paramName}); // ${argTypes[i].name}\n`;
-            args1.push(`${paramName}_dtor`);
-            args2.push(argTypes[i].destructorFunction);
+      // KOVAFORGE: no `new Function` (the hub's CSP has no unsafe-eval); a closure does what the generated invoker did
+      const retType = argTypes[0];
+      const classParam = argTypes[1];
+      return function (...args) {
+        if (args.length !== argCount - 2) {
+          throwBindingError(
+            `function ${humanName} called with ${args.length} arguments, expected ${
+              argCount - 2
+            } args!`,
+          );
+        }
+        const destructors = needsDestructorStack ? [] : null;
+        const wired = [];
+        let thisWired;
+        if (isClassMethodFunc) {
+          thisWired = classParam.toWireType(destructors, this);
+        }
+        for (let j = 0; j < argCount - 2; ++j) {
+          wired.push(argTypes[j + 2].toWireType(destructors, args[j]));
+        }
+        const rv = cppInvokerFunc(
+          cppTargetFunc,
+          ...(isClassMethodFunc ? [thisWired] : []),
+          ...wired,
+        );
+        if (needsDestructorStack) {
+          runDestructors(destructors);
+        } else {
+          for (let j = isClassMethodFunc ? 1 : 2; j < argTypes.length; ++j) {
+            const wiredValue = j === 1 ? thisWired : wired[j - 2];
+            if (argTypes[j].destructorFunction !== null) {
+              argTypes[j].destructorFunction(wiredValue);
+            }
           }
         }
-      }
-      if (returns) {
-        invokerFnBody +=
-          "var ret = retType.fromWireType(rv);\n" + "return ret;\n";
-      } else {
-      }
-      invokerFnBody += "}\n";
-      args1.push(invokerFnBody);
-      const invokerFunction = new_(Function, args1).apply(null, args2);
-      return invokerFunction;
+        if (returns) {
+          return retType.fromWireType(rv);
+        }
+      };
     }
     function __embind_register_class_function(
       rawClassType,
