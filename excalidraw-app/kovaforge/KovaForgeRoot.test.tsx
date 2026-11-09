@@ -10,6 +10,11 @@ import { stashCurrentDrawing } from "./stash";
 vi.mock("../App", () => ({ default: () => <div>EDITOR</div> }));
 vi.mock("./session", () => ({ loadScene: vi.fn(), attach: vi.fn() }));
 vi.mock("./api", () => ({ generateDiagram: vi.fn() }));
+vi.mock("./EditorActions", () => ({
+  EditorActions: (props: { onOpened: (title: string) => void }) => (
+    <button onClick={() => props.onOpened("Orders")}>FAKE OPEN</button>
+  ),
+}));
 
 const order: string[] = [];
 vi.mock("./stash", () => ({
@@ -76,5 +81,17 @@ describe("KovaForgeRoot", () => {
     expect(screen.getByText("Put back my previous drawing")).toBeTruthy();
     fireEvent.click(screen.getByText("Got it"));
     expect(screen.queryByText(/AI draft/)).toBeNull();
+  });
+
+  it("shows the copy banner after a share is reopened", () => {
+    window.location.hash = "#editor";
+    render(<KovaForgeRoot />);
+    fireEvent.click(screen.getByText("FAKE OPEN"));
+    expect(
+      screen.getByText(
+        'Opened a copy of "Orders". Changes are not saved to its link. Share again to get a new link.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText("Put back my previous drawing")).toBeTruthy();
   });
 });

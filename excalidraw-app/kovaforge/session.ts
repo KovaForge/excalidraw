@@ -2,6 +2,8 @@
 
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
+import { getEngine } from "./registry";
+
 import type { EngineScene } from "./engine";
 
 export const FIT_TOP_PX = 100;
@@ -55,4 +57,27 @@ export function loadScene(scene: EngineScene) {
   } else {
     queued = scene;
   }
+}
+
+/** The drawing on screen as an engine scene (elements that are not deleted, plus the background), or null when there is nothing to share. */
+export function getScene(): EngineScene | null {
+  if (!api) {
+    return null;
+  }
+  const elements = api.getSceneElements().filter((e) => !e.isDeleted);
+  if (!elements.length) {
+    return null;
+  }
+  const engine = getEngine();
+  const data = {
+    elements,
+    appState: {
+      viewBackgroundColor: api.getAppState().viewBackgroundColor ?? "#ffffff",
+    },
+  };
+  return {
+    engine: engine.id,
+    version: engine.version,
+    data: JSON.parse(JSON.stringify(data)),
+  };
 }

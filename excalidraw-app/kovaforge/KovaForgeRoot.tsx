@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import ExcalidrawApp from "../App";
 
+import { EditorActions } from "./EditorActions";
 import { Landing } from "./Landing";
 import { setCurrentDiagram } from "./currentDiagram";
 import { getEngine, getLayout, registerDefaults } from "./registry";
@@ -35,14 +36,15 @@ export const KovaForgeRoot = () => {
   const [view, setView] = useState<View>(
     window.location.hash === "#editor" ? "editor" : "landing",
   );
-  const [draft, setDraft] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [banner, setBanner] = useState<
+    { kind: "draft" } | { kind: "copy"; title: string } | null
+  >(null);
 
   if (view === "landing") {
     return (
       <Landing
         onContinue={() => {
-          setDraft(false);
+          setBanner(null);
           setView("editor");
         }}
         onBlank={() => {
@@ -53,7 +55,7 @@ export const KovaForgeRoot = () => {
             version: "",
             data: { elements: [], appState: {} },
           });
-          setDraft(false);
+          setBanner(null);
           setView("editor");
         }}
         onDraft={(diagram: Diagram) => {
@@ -62,8 +64,7 @@ export const KovaForgeRoot = () => {
           const scene = getEngine().toScene(positioned);
           setCurrentDiagram(diagram);
           loadScene(scene);
-          setDismissed(false);
-          setDraft(true);
+          setBanner({ kind: "draft" });
           setView("editor");
         }}
       />
@@ -73,18 +74,20 @@ export const KovaForgeRoot = () => {
   return (
     <>
       <ExcalidrawApp />
-      {draft && !dismissed && (
+      <EditorActions onOpened={(title) => setBanner({ kind: "copy", title })} />
+      {banner && (
         <div className="kf-banner" role="status">
           <span>
-            AI draft. Check it and change anything you like. It is not saved or
-            shared until you choose.
+            {banner.kind === "draft"
+              ? "AI draft. Check it and change anything you like. It is not saved or shared until you choose."
+              : `Opened a copy of "${banner.title}". Changes are not saved to its link. Share again to get a new link.`}
           </span>
           {hasStash() && (
             <button type="button" onClick={requestRestore}>
               Put back my previous drawing
             </button>
           )}
-          <button type="button" onClick={() => setDismissed(true)}>
+          <button type="button" onClick={() => setBanner(null)}>
             Got it
           </button>
         </div>

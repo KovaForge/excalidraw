@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { attach, loadScene, FIT_BOTTOM_PX, FIT_TOP_PX } from "./session";
+import { registerDefaults } from "./registry";
+import {
+  attach,
+  getScene,
+  loadScene,
+  FIT_BOTTOM_PX,
+  FIT_TOP_PX,
+} from "./session";
 
 const makeApi = () =>
   ({
@@ -38,6 +45,38 @@ describe("session fit", () => {
     attach(api);
     loadScene(scene);
     expect(api.setViewport.mock.calls[0][0].fit).toBe("scale-down");
+    attach(null);
+  });
+});
+
+describe("session getScene", () => {
+  it("returns null with no editor or an empty drawing", () => {
+    attach(null);
+    expect(getScene()).toBeNull();
+    attach({
+      getSceneElements: () => [{ id: "a", isDeleted: true }],
+      getAppState: () => ({}),
+    } as any);
+    expect(getScene()).toBeNull();
+    attach(null);
+  });
+
+  it("returns live elements and the background as an engine scene", () => {
+    registerDefaults();
+    attach({
+      getSceneElements: () => [
+        { id: "a", isDeleted: false },
+        { id: "b", isDeleted: true },
+      ],
+      getAppState: () => ({ viewBackgroundColor: "#eeeeee", width: 5 }),
+    } as any);
+    const scene = getScene()!;
+    expect(scene.engine).toBe("excalidraw");
+    expect(scene.version).toBe("0.18.0");
+    expect(scene.data).toEqual({
+      elements: [{ id: "a", isDeleted: false }],
+      appState: { viewBackgroundColor: "#eeeeee" },
+    });
     attach(null);
   });
 });

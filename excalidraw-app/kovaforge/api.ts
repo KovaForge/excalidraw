@@ -11,14 +11,14 @@ export type GenerateResult =
 
 export const GENERATE_URL = "/canvas/api/generate";
 
-const SIGNED_OUT =
+export const SIGNED_OUT =
   "Your sign-in has ended. Sign in again at kovaforge.org, then come back.";
-const NOT_AVAILABLE = "Canvas is not available for your account.";
-const NETWORK =
+export const NOT_AVAILABLE = "Canvas is not available for your account.";
+export const NETWORK =
   "Could not reach the server. Check your connection and try again.";
 const UNUSABLE =
   "The server sent back something that is not a usable diagram. Try again.";
-const GENERIC = "Something went wrong. Try again.";
+export const GENERIC = "Something went wrong. Try again.";
 
 const fail = (message: string, signedOut?: boolean): GenerateResult =>
   signedOut ? { ok: false, message, signedOut: true } : { ok: false, message };
