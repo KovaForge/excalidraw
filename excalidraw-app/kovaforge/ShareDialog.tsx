@@ -26,6 +26,14 @@ export const ShareDialog = (props: { onClose: () => void }) => {
   const mounted = useRef(true);
   const timer = useRef<number | undefined>(undefined);
 
+  // The pressed button disables itself on success, which would drop focus to
+  // <body> and break the dialog's Tab trap: move it to the link instead.
+  useEffect(() => {
+    if (link) {
+      input.current?.focus();
+    }
+  }, [link]);
+
   useEffect(() => {
     mounted.current = true;
     return () => {

@@ -95,6 +95,20 @@ describe("ShareDialog", () => {
     expect(copyText).toHaveBeenCalledWith("https://x/canvas/s/i1/my-diagram");
   });
 
+  it("moves focus to the link after Create link, so it stays inside the dialog", async () => {
+    render(<ShareDialog onClose={() => {}} />);
+    const create = screen.getByRole("button", { name: "Create link" });
+    create.focus();
+    fireEvent.click(create);
+    const link = (await screen.findByLabelText(
+      "Your link",
+    )) as HTMLInputElement;
+    await waitFor(() => expect(document.activeElement).toBe(link));
+    expect(screen.getByRole("dialog").contains(document.activeElement)).toBe(
+      true,
+    );
+  });
+
   it("sends the diagram when the drawing came from a draft", async () => {
     setCurrentDiagram(branching);
     render(<ShareDialog onClose={() => {}} />);

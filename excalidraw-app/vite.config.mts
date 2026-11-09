@@ -306,6 +306,11 @@ export default defineConfig(({ mode }) => {
         },
 
         workbox: {
+          // KOVAFORGE: the service worker must leave the public share pages and the
+          // API to the network. The worker sees full paths, so the patterns include
+          // the /canvas/ base; without this its navigation fallback served the
+          // editor shell for /canvas/s/<id>/<slug>.
+          navigateFallbackDenylist: [/^\/canvas\/s\//, /^\/canvas\/api\//],
           // don't precache fonts, locales and separate chunks
           globIgnores: [
             "fonts.css",

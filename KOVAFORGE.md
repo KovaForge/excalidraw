@@ -49,6 +49,8 @@ One change in `excalidraw-app/index.html`:
 
 11. `packages/excalidraw/fonts/ExcalidrawFontFace.ts` (`createUrls`): the esm.sh fallback url is skipped when `window.KOVAFORGE_NO_FONT_FALLBACK` is true (marker `KOVAFORGE: the hub self-hosts the fonts`), and `excalidraw-app/index.html` sets that flag in an inline script before the app (marker `KOVAFORGE: fonts are self-hosted`). Why: every registered font face listed an esm.sh url, and the hub's CSP (`font-src 'self' data:`) reported about 230 violations as soon as the editor mounted. The build's `window.EXCALIDRAW_ASSET_PATH` must be `["/"]` (the font urls already carry the `/canvas/` base); `canvas/build.sh` in kovaforge-home sets that.
 
+12. `excalidraw-app/vite.config.mts`: the VitePWA `workbox` options get `navigateFallbackDenylist: [/^\/canvas\/s\//, /^\/canvas\/api\//]` (marker `KOVAFORGE: the service worker must leave the public share pages and the API`). Why: the service worker's navigation fallback returned the editor shell for the public share page `/canvas/s/<id>/<slug>` once someone had opened Canvas. The patterns include the `/canvas/` base because the worker matches full paths. The share files (`diagram.svg`, `diagram.png`) are not precached and no runtimeCaching rule matches them.
+
 Every future hook into upstream files must be marked with a `KOVAFORGE:` comment and listed here.
 
 ## Where our own code lives
