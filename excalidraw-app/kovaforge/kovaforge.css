@@ -157,7 +157,7 @@
 .kf-actions {
   position: fixed;
   top: 12px;
-  right: 12px;
+  right: 64px; /* left of the editor's own sidebar toggle */
   z-index: 5;
   display: flex;
   gap: 8px;
@@ -174,6 +174,13 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+}
+@media (max-width: 1120px) {
+  /* no room beside the toolbar: a row under the top bar, clear of the sidebar toggle */
+  .kf-actions {
+    top: 64px;
+    right: 12px;
+  }
 }
 .kf-actions button:hover,
 .kf-actions button:focus-visible {
