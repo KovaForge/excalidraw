@@ -376,11 +376,6 @@ const initializeScene = async (opts: {
 const ExcalidrawWrapper = () => {
   const excalidrawAPI = useExcalidrawAPI();
 
-  // KOVAFORGE: hand the editor API to the landing flow so a generated draft can be loaded into it
-  useEffect(() => {
-    attachKovaForgeSession(excalidrawAPI);
-  }, [excalidrawAPI]);
-
   const [errorMessage, setErrorMessage] = useState("");
   // KOVAFORGE: VITE_APP_DISABLE_SHARING turns off live collaboration, share links and Excalidraw+ export,
   // so drawings never leave the browser.
@@ -965,6 +960,8 @@ const ExcalidrawWrapper = () => {
       <Excalidraw
         viewportStatusFrame={viewportStatusFrame}
         userToFollow={userToFollow}
+        // KOVAFORGE: hand the editor API to the landing flow once the saved scene has loaded, so a generated draft replaces it
+        onInitialize={attachKovaForgeSession}
         onChange={onChange}
         onExport={onExport}
         initialData={initialStatePromiseRef.current.promise}

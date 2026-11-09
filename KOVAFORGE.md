@@ -40,7 +40,7 @@ One change in `excalidraw-app/index.html`:
 4. `.eslintignore`: one line excluding `excalidraw-app/kovaforge/diagram.ts` (see the copy contract below).
 
 5. `excalidraw-app/index.tsx`: renders `KovaForgeRoot` in place of the `ExcalidrawApp` element (marker `KOVAFORGE: the landing page and draft banner wrap the editor`). Why: the landing page comes first and the AI draft banner sits over the editor.
-6. `excalidraw-app/App.tsx`: an effect calls `attach(excalidrawAPI)` from `./kovaforge/session` (marker `KOVAFORGE: hand the editor API to the landing flow`). Why: lets a generated draft be loaded into the mounted editor.
+6. `excalidraw-app/App.tsx`: the `<Excalidraw>` prop `onInitialize={attach}` from `./kovaforge/session` (marker `KOVAFORGE: hand the editor API to the landing flow`). Why: lets a generated draft be loaded into the mounted editor; it fires after the saved scene has loaded, so the draft is not overwritten by it.
 7. `excalidraw-app/App.tsx`: `<TTDDialogTrigger />` renders only when `!isSharingDisabled` (marker `KOVAFORGE: the built-in text-to-diagram entry`). Why: it needs a cloud AI backend we do not use.
 8. `excalidraw-app/components/AppWelcomeScreen.tsx`: the "Sign up" (Excalidraw+) item is hidden when `VITE_APP_DISABLE_SHARING` is `"true"` (marker `KOVAFORGE: no Excalidraw+ sign-up`). Same flag as `isSharingDisabled`, which is local to App.tsx.
 9. `excalidraw-app/components/AppMainMenu.tsx`: the two Excalidraw+ items (Excalidraw+ link and Sign up/Sign in) are hidden under the same flag (marker `KOVAFORGE: no Excalidraw+ items`). Why: they lead to cloud services we do not use.
