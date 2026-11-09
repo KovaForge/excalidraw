@@ -39,6 +39,12 @@ One change in `excalidraw-app/index.html`:
 
 4. `.eslintignore`: one line excluding `excalidraw-app/kovaforge/diagram.ts` (see the copy contract below).
 
+5. `excalidraw-app/index.tsx`: renders `KovaForgeRoot` in place of the `ExcalidrawApp` element (marker `KOVAFORGE: the landing page and draft banner wrap the editor`). Why: the landing page comes first and the AI draft banner sits over the editor.
+6. `excalidraw-app/App.tsx`: an effect calls `attach(excalidrawAPI)` from `./kovaforge/session` (marker `KOVAFORGE: hand the editor API to the landing flow`). Why: lets a generated draft be loaded into the mounted editor.
+7. `excalidraw-app/App.tsx`: `<TTDDialogTrigger />` renders only when `!isSharingDisabled` (marker `KOVAFORGE: the built-in text-to-diagram entry`). Why: it needs a cloud AI backend we do not use.
+8. `excalidraw-app/components/AppWelcomeScreen.tsx`: the "Sign up" (Excalidraw+) item is hidden when `VITE_APP_DISABLE_SHARING` is `"true"` (marker `KOVAFORGE: no Excalidraw+ sign-up`). Same flag as `isSharingDisabled`, which is local to App.tsx.
+9. `excalidraw-app/components/AppMainMenu.tsx`: the two Excalidraw+ items (Excalidraw+ link and Sign up/Sign in) are hidden under the same flag (marker `KOVAFORGE: no Excalidraw+ items`). Why: they lead to cloud services we do not use.
+
 Every future hook into upstream files must be marked with a `KOVAFORGE:` comment and listed here.
 
 ## Where our own code lives
@@ -49,6 +55,8 @@ Every future hook into upstream files must be marked with a `KOVAFORGE:` comment
 - Layout: `layout-dagre.ts` (dagre node x and y are centres; converted to top-left). Excalidraw adapter: `engine-excalidraw.ts` (`exportScene`, since this version of Excalidraw replaced `exportToSvg` and `exportToBlob`).
 - Dependency added: `@dagrejs/dagre` at exactly 3.1.3 (MIT, in `excalidraw-app/package.json`), approved for graph layout. It pulls in `@dagrejs/graphlib`. On a `yarn.lock` conflict follow the lockfile rule below.
 - Copy contract: `excalidraw-app/kovaforge/diagram.ts` is a byte-for-byte copy of `src/canvas/diagram.ts` in kovaforge-home. Change it there, then `cp` it here; never edit this copy. `canvas/build.sh` in kovaforge-home refuses to build when the two differ, and `diagram.test.ts` checks it when the hub checkout is next to this repo. The file is listed in `.eslintignore` (marked `KOVAFORGE:`) so lint cannot reformat it.
+
+- Landing and draft flow: `Landing.tsx` (+ `kovaforge.css`, hub Inter fonts from `/assets/fonts`), `KovaForgeRoot.tsx` (landing, editor, AI draft banner), `api.ts` (POST `/canvas/api/generate`, results re-validated), `stash.ts` (keeps the previous drawing under `kovaforge:previous:*`; restore sets a sessionStorage flag and reloads, because the editor autosaves on unload), `session.ts` (loads a scene into the editor, queued until attached), `currentDiagram.ts` (the diagram behind the draft, for the later share feature). Tests sit beside each file.
 
 ## Commands
 

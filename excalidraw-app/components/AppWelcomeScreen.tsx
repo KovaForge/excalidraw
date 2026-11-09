@@ -64,17 +64,19 @@ export const AppWelcomeScreen: React.FC<{
               onSelect={() => props.onCollabDialogOpen()}
             />
           )}
-          {!isExcalidrawPlusSignedUser && (
-            <WelcomeScreen.Center.MenuItemLink
-              href={`${
-                import.meta.env.VITE_APP_PLUS_LP
-              }/plus?utm_source=excalidraw&utm_medium=app&utm_content=welcomeScreenGuest`}
-              shortcut={null}
-              icon={loginIcon}
-            >
-              {t("labels.signUp")}
-            </WelcomeScreen.Center.MenuItemLink>
-          )}
+          {/* KOVAFORGE: no Excalidraw+ sign-up when sharing is disabled (same flag as isSharingDisabled in App.tsx) */}
+          {!isExcalidrawPlusSignedUser &&
+            import.meta.env.VITE_APP_DISABLE_SHARING !== "true" && (
+              <WelcomeScreen.Center.MenuItemLink
+                href={`${
+                  import.meta.env.VITE_APP_PLUS_LP
+                }/plus?utm_source=excalidraw&utm_medium=app&utm_content=welcomeScreenGuest`}
+                shortcut={null}
+                icon={loginIcon}
+              >
+                {t("labels.signUp")}
+              </WelcomeScreen.Center.MenuItemLink>
+            )}
         </WelcomeScreen.Center.Menu>
       </WelcomeScreen.Center>
     </WelcomeScreen>

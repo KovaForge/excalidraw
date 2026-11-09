@@ -101,6 +101,7 @@ import Collab, {
 } from "./collab/Collab";
 import { AppFooter } from "./components/AppFooter";
 import { AppMainMenu } from "./components/AppMainMenu";
+import { attach as attachKovaForgeSession } from "./kovaforge/session";
 import { AppWelcomeScreen } from "./components/AppWelcomeScreen";
 import {
   ExportToExcalidrawPlus,
@@ -374,6 +375,11 @@ const initializeScene = async (opts: {
 
 const ExcalidrawWrapper = () => {
   const excalidrawAPI = useExcalidrawAPI();
+
+  // KOVAFORGE: hand the editor API to the landing flow so a generated draft can be loaded into it
+  useEffect(() => {
+    attachKovaForgeSession(excalidrawAPI);
+  }, [excalidrawAPI]);
 
   const [errorMessage, setErrorMessage] = useState("");
   // KOVAFORGE: VITE_APP_DISABLE_SHARING turns off live collaboration, share links and Excalidraw+ export,
@@ -1072,7 +1078,8 @@ const ExcalidrawWrapper = () => {
         <AppFooter onChange={() => excalidrawAPI?.refresh()} />
         {excalidrawAPI && <AIComponents excalidrawAPI={excalidrawAPI} />}
 
-        <TTDDialogTrigger />
+        {/* KOVAFORGE: the built-in text-to-diagram entry needs a cloud AI backend we do not use */}
+        {!isSharingDisabled && <TTDDialogTrigger />}
         {isCollaborating && isOffline && (
           <div className="alertalert--warning">
             {t("alerts.collabOfflineWarning")}
