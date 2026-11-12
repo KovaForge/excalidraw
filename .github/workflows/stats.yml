@@ -1,5 +1,12 @@
 name: Stats
 
+# Switched off on the KovaForge fork (Mike, 12 Nov 2026). This workflow
+# posts bundle size and page-load numbers to the upstream Excalidraw+
+# admin. We have no OSS_STATS_TOKEN, so every master push failed (five
+# times on 9 Nov). Tests are separate and still run. Restore the push
+# trigger and set the token in the `stats` environment if we ever want
+# these measurements.
+
 # Posts every master commit's production build (bundle size) and its page-load
 # measurements — next to the commit before it, both built and measured
 # alternately on the same runner — to the Excalidraw+ admin's Bundle size and
@@ -8,8 +15,6 @@ name: Stats
 # OSS_STATS_TOKEN lives in the `stats` environment, which only master can use.
 
 on:
-  push:
-    branches: master
   workflow_dispatch:
 
 permissions:
